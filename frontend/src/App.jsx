@@ -6,7 +6,7 @@ import {
 
 import "./App.css";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://healthcare-appointment-manager-az0x.onrender.com";
 
 function App() {
 
