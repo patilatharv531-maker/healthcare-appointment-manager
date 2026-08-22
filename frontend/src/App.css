@@ -1629,3 +1629,21 @@ button:disabled {
         width: 100%;
     }
 }
+
+/* ======================================================
+   LOGIN PAGE TYPOGRAPHY
+   ====================================================== */
+
+.login-card h1 {
+  font-size: 38px;
+  line-height: 1.2;
+  margin: 0 0 8px;
+  text-align: center;
+}
+
+.login-card .subtitle {
+  font-size: 18px;
+  line-height: 1.4;
+  margin: 0 0 28px;
+  text-align: center;
+}
