@@ -1,0 +1,269 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  PATIENT
+  DOCTOR
+  ADMIN
+}
+
+enum AppointmentStatus {
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  CANCELLED_BY_DOCTOR
+  RESCHEDULED
+}
+
+enum AIStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMATION
+  APPOINTMENT_REMINDER
+  CANCELLATION
+  RESCHEDULE
+  DOCTOR_LEAVE
+  MEDICATION_REMINDER
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  patient      Patient?
+  doctor       Doctor?
+  notifications Notification[]
+  calendarEvents CalendarEvent[]
+  googleCalendarAccount GoogleCalendarAccount?
+}
+
+model Patient {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  appointments Appointment[]
+
+  medicationReminders MedicationReminder[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Doctor {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  specialization String
+  slotDuration   Int      @default(30)
+  workingStart   String
+  workingEnd     String
+
+  leaves         DoctorLeave[]
+  appointments   Appointment[]
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model DoctorLeave {
+  id        String   @id @default(cuid())
+  doctorId  String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  leaveDate DateTime
+  reason    String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([doctorId, leaveDate])
+}
+
+model Appointment {
+  id              String   @id @default(cuid())
+
+  doctorId        String
+  patientId       String
+
+  doctor          Doctor   @relation(fields: [doctorId], references: [id])
+  patient         Patient @relation(fields: [patientId], references: [id])
+
+  startTime       DateTime
+  endTime         DateTime
+  status          AppointmentStatus @default(CONFIRMED)
+
+  symptoms        String?
+
+  aiSummary       Json?
+  aiStatus        AIStatus @default(PENDING)
+
+  consultationNotes String?
+  postVisitSummary  String?
+
+  prescription    Prescription?
+  notifications   Notification[]
+  calendarEvents  CalendarEvent[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([doctorId, startTime])
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([startTime])
+}
+
+model SlotHold {
+  id         String   @id @default(cuid())
+
+  doctorId   String
+  patientId  String
+
+  startTime  DateTime
+  endTime    DateTime
+  expiresAt  DateTime
+
+  createdAt  DateTime @default(now())
+
+  @@unique([doctorId, startTime])
+  @@index([expiresAt])
+}
+
+model Prescription {
+  id             String   @id @default(cuid())
+
+  appointmentId  String   @unique
+  appointment    Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  medicineName   String
+  dosage         String
+  frequency      String
+  duration       String
+  startDate      DateTime
+
+  reminders MedicationReminder[]
+
+  createdAt      DateTime @default(now())
+}
+
+model Notification {
+  id             String   @id @default(cuid())
+
+  appointmentId  String?
+  appointment    Appointment? @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  userId         String
+  user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type           NotificationType
+  recipient      String
+  status         NotificationStatus @default(PENDING)
+
+  attempts       Int      @default(0)
+  lastError      String?
+  nextRetryAt    DateTime?
+
+  createdAt      DateTime @default(now())
+  sentAt         DateTime?
+
+  @@index([status])
+  @@index([nextRetryAt])
+}
+
+model CalendarEvent {
+  id             String   @id @default(cuid())
+
+  appointmentId  String
+  appointment    Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  userId         String
+  user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  googleEventId  String
+  status         String   @default("ACTIVE")
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([appointmentId, userId])
+  @@index([googleEventId])
+}
+model EmailJob {
+  id           String   @id @default(cuid())
+  recipient    String
+  subject      String
+  text         String?
+  html         String?
+  attempts     Int      @default(0)
+  maxAttempts  Int      @default(3)
+  status       String   @default("PENDING")
+  nextAttemptAt DateTime @default(now())
+  lastError    String?
+  reminderId String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([status, nextAttemptAt])
+}
+model MedicationReminder {
+  id             String   @id @default(cuid())
+
+  prescriptionId String
+  prescription   Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+
+  patientId      String
+  patient        Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  reminderTime   DateTime
+  status         ReminderStatus @default(PENDING)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([reminderTime, status])
+  @@index([patientId])
+  @@unique([prescriptionId, reminderTime])
+}
+
+enum ReminderStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+}
+
+model GoogleCalendarAccount {
+  id           String   @id @default(cuid())
+
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  accessToken  String
+  refreshToken String?
+  expiryDate   BigInt?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
