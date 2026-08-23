@@ -29,12 +29,14 @@ The system supports:
 ### Patient Features
 
 - Secure patient registration and login
+- Create a new patient account
+- Password-protected patient authentication
 - View registered doctors
 - View doctor specialization and working hours
 - Check available appointment slots
 - Temporarily hold an appointment slot
 - Confirm appointments
-- Submit symptoms before an appointment
+- Submit symptoms before the appointment
 - Cancel appointments
 - Reschedule appointments
 - View upcoming appointments
@@ -283,8 +285,31 @@ Authorization: Bearer <JWT_TOKEN>
 
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
-| POST | `/api/auth/register` | Public | Register a patient |
+| POST | `/api/auth/register` | Public | Register a new patient |
 | POST | `/api/auth/login` | Public | Login and receive JWT |
+
+#### Patient Registration
+
+The patient registration endpoint accepts:
+
+```json
+{
+  "name": "Patient Name",
+  "email": "patient@example.com",
+  "password": "password123"
+}
+```
+
+The backend:
+
+- Validates the required fields
+- Validates the minimum password length
+- Normalizes the email address
+- Checks for an existing account
+- Hashes the password using bcrypt
+- Creates a PATIENT user
+- Creates the associated patient record
+- Generates a JWT
 
 ### Doctors
 
@@ -332,7 +357,7 @@ The application provides doctor-side functionality for:
 - Generating post-visit summaries
 - Generating medication reminders
 
-Refer to the corresponding appointment controller and routes for the implementation details.
+Refer to the corresponding appointment controller and routes for implementation details.
 
 ## LLM Usage
 
@@ -340,28 +365,37 @@ The application uses an LLM for two healthcare-assistance features.
 
 ### Pre-Visit Summary
 
-Prompt:
-
-```text
-Analyse these symptoms and return:
-urgency level (Low / Medium / High),
-chief complaint,
-and three suggested questions for the doctor.
-
-Symptoms: <symptoms>
-```
-
-The output provides:
+The system analyzes patient-provided symptoms and generates:
 
 - Urgency level
 - Chief complaint
 - Three suggested questions for the doctor
 
+Example prompt structure:
+
+```text
+Analyse these symptoms and return:
+
+urgency level (Low / Medium / High),
+
+chief complaint,
+
+and three suggested questions for the doctor.
+
+Symptoms: <symptoms>
+```
+
 The LLM is used as an assistance tool and does not replace professional medical diagnosis or treatment.
 
 ### Post-Visit Summary
 
-Prompt:
+The system converts doctor-provided clinical notes into a patient-friendly summary containing:
+
+- Visit summary
+- Medication schedule
+- Follow-up steps
+
+Example prompt structure:
 
 ```text
 Convert these clinical notes into a patient-friendly summary
@@ -369,8 +403,6 @@ with medication schedule and follow-up steps:
 
 <notes>
 ```
-
-The output provides a patient-friendly summary of the consultation, medication schedule, and follow-up instructions.
 
 The LLM should not invent clinical information or modify medication instructions.
 
@@ -515,9 +547,13 @@ SYSTEM_DESIGN.md
 - [ ] `.env` excluded
 - [ ] `node_modules` excluded
 - [ ] No API keys or passwords committed
+- [ ] Patient registration tested
+- [ ] Patient login tested
+- [ ] Appointment booking tested
+- [ ] Appointment cancellation tested
+- [ ] Appointment rescheduling tested
 - [ ] Frontend deployed
 - [ ] Backend deployed
-- [ ] Hosted application URL available
 - [ ] Google Calendar configured
 - [ ] Email notifications configured
 - [ ] LLM prompts documented

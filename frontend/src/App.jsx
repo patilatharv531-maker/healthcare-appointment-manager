@@ -15,6 +15,12 @@ function App() {
 
   const [loginMode, setLoginMode] = useState(null);
 
+  const [showPatientSignup, setShowPatientSignup] = useState(false);
+  const [signupName, setSignupName] = useState("");
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
+  const [signupLoading, setSignupLoading] = useState(false);
+
   const [token, setToken] = useState(
   () => localStorage.getItem("token")
 );
@@ -229,6 +235,59 @@ setMessage("");
 
     }
   };
+
+  const handlePatientSignup = async (e) => {
+  e.preventDefault();
+
+  setSignupLoading(true);
+  setMessage("");
+
+  try {
+    const response = await fetch(
+      `${API_URL}/api/auth/register`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: signupName,
+          email: signupEmail,
+          password: signupPassword,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Unable to create account"
+      );
+    }
+
+    setMessage(
+      "Account created successfully. You can now log in."
+    );
+
+    setSignupName("");
+    setSignupEmail("");
+    setSignupPassword("");
+
+    setShowPatientSignup(false);
+
+  } catch (error) {
+    console.error(
+      "Patient registration error:",
+      error
+    );
+
+    setMessage(error.message);
+
+  } finally {
+    setSignupLoading(false);
+  }
+};
 
 
   // ======================================================
@@ -1586,46 +1645,124 @@ useEffect(() => {
       : "Access your patient dashboard"}
 </p>
 
-          <form onSubmit={handleLogin}>
+          {showPatientSignup ? (
 
-            <label>
-              Email
-            </label>
+  <form onSubmit={handlePatientSignup}>
 
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) =>
-                setEmail(e.target.value)
-              }
-              required
-            />
+    <label>
+      Full Name
+    </label>
 
-            <label>
-              Password
-            </label>
+    <input
+      type="text"
+      placeholder="Enter your full name"
+      value={signupName}
+      onChange={(e) =>
+        setSignupName(e.target.value)
+      }
+      required
+    />
 
-            <input
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) =>
-                setPassword(e.target.value)
-              }
-              required
-            />
+    <label>
+      Email
+    </label>
 
-            <button
-              type="submit"
-              disabled={loading}
-            >
-              {loading
-                ? "Logging in..."
-                : "Login"}
-            </button>
+    <input
+      type="email"
+      placeholder="Enter your email"
+      value={signupEmail}
+      onChange={(e) =>
+        setSignupEmail(e.target.value)
+      }
+      required
+    />
 
-          </form>
+    <label>
+      Password
+    </label>
+
+    <input
+      type="password"
+      placeholder="Minimum 6 characters"
+      value={signupPassword}
+      onChange={(e) =>
+        setSignupPassword(e.target.value)
+      }
+      minLength={6}
+      required
+    />
+
+    <button
+      type="submit"
+      disabled={signupLoading}
+    >
+      {signupLoading
+        ? "Creating Account..."
+        : "Create Account"}
+    </button>
+
+  </form>
+
+) : (
+
+  <form onSubmit={handleLogin}>
+
+    <label>
+      Email
+    </label>
+
+    <input
+      type="email"
+      placeholder="Enter your email"
+      value={email}
+      onChange={(e) =>
+        setEmail(e.target.value)
+      }
+      required
+    />
+
+    <label>
+      Password
+    </label>
+
+    <input
+      type="password"
+      placeholder="Enter your password"
+      value={password}
+      onChange={(e) =>
+        setPassword(e.target.value)
+      }
+      required
+    />
+
+    <button
+      type="submit"
+      disabled={loading}
+    >
+      {loading
+        ? "Logging in..."
+        : "Login"}
+    </button>
+
+    {!isDoctorLogin && !isAdminLogin && (
+  <div className="signup-link">
+    <span>Don't have an account?</span>
+
+    <button
+      type="button"
+      onClick={() => {
+        setShowPatientSignup(true);
+        setMessage("");
+      }}
+    >
+      Create Patient Account
+    </button>
+  </div>
+)}
+
+  </form>
+
+)}
 
           {message && (
             <p className="message">

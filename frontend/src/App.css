@@ -1647,3 +1647,119 @@ button:disabled {
   margin: 0 0 28px;
   text-align: center;
 }
+
+.signup-link {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.signup-link span {
+  color: #555;
+}
+
+.signup-link button {
+  border: none;
+  background: none;
+  color: #2563eb;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 5px;
+  font-size: 14px;
+}
+
+.signup-link button:hover {
+  text-decoration: underline;
+}
+
+/* =====================================================
+   DASHBOARD BACKGROUND - PATIENT / DOCTOR / ADMIN
+   Does NOT affect the portal selection page or login page
+   ===================================================== */
+
+.app:has(.dashboard) {
+  min-height: 100vh;
+  padding: 40px 20px;
+  position: relative;
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      circle at 8% 10%,
+      rgba(219, 234, 254, 0.75),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 92% 85%,
+      rgba(220, 252, 231, 0.55),
+      transparent 28%
+    ),
+    linear-gradient(
+      135deg,
+      #f5f9ff 0%,
+      #eef5ff 45%,
+      #f8fbff 100%
+    );
+}
+
+/* Soft decorative background shapes */
+
+.app:has(.dashboard)::before,
+.app:has(.dashboard)::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app:has(.dashboard)::before {
+  width: 420px;
+  height: 420px;
+  top: -210px;
+  left: -180px;
+  background: rgba(147, 197, 253, 0.18);
+}
+
+.app:has(.dashboard)::after {
+  width: 380px;
+  height: 380px;
+  right: -170px;
+  bottom: -180px;
+  background: rgba(134, 239, 172, 0.14);
+}
+
+/* Keep dashboard content above decorations */
+
+.app:has(.dashboard) .dashboard {
+  position: relative;
+  z-index: 1;
+}
+
+/* Slightly stronger dashboard heading */
+
+.app:has(.dashboard) .header h1 {
+  color: #12264b;
+}
+
+/* Give dashboard sections a premium card feel */
+
+.app:has(.dashboard) .appointments-section {
+  border: 1px solid rgba(219, 234, 254, 0.9);
+  box-shadow:
+    0 10px 30px rgba(31, 41, 55, 0.06),
+    0 2px 8px rgba(37, 99, 235, 0.03);
+}
+
+/* Dashboard statistic cards */
+
+.app:has(.dashboard) .stat-card {
+  border: 1px solid rgba(219, 234, 254, 0.9);
+  box-shadow: 0 8px 24px rgba(31, 41, 55, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.app:has(.dashboard) .stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.08);
+}

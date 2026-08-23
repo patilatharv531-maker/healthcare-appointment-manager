@@ -171,8 +171,8 @@ router.get("/oauth2callback", async (req, res) => {
         // ------------------------------------------
 
         return res.redirect(
-            "http://localhost:5173/?calendar=connected"
-        );
+    `${process.env.FRONTEND_URL}/?calendar=connected`
+);
 
     } catch (error) {
 
