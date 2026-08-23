@@ -1503,9 +1503,10 @@ useEffect(() => {
                   type="button"
                   className="portal-button patient-portal"
                   onClick={() => {
-                    setLoginMode("PATIENT");
-                    setMessage("");
-                  }}
+  setLoginMode("PATIENT");
+  setShowPatientSignup(false);
+  setMessage("");
+}}
                 >
                   <div className="portal-icon patient-icon">
                     ♙
@@ -1534,9 +1535,10 @@ useEffect(() => {
                   type="button"
                   className="portal-button doctor-portal"
                   onClick={() => {
-                    setLoginMode("DOCTOR");
-                    setMessage("");
-                  }}
+  setLoginMode("DOCTOR");
+  setShowPatientSignup(false);
+  setMessage("");
+}}
                 >
                   <div className="portal-icon doctor-icon">
                     ♙
@@ -1565,9 +1567,10 @@ useEffect(() => {
   type="button"
   className="portal-button admin-portal"
   onClick={() => {
-    setLoginMode("ADMIN");
-    setMessage("");
-  }}
+  setLoginMode("ADMIN");
+  setShowPatientSignup(false);
+  setMessage("");
+}}
 >
   <div className="portal-icon admin-icon">
     ⚙
@@ -1774,11 +1777,18 @@ useEffect(() => {
             type="button"
             className="portal-back-button"
             onClick={() => {
-              setLoginMode(null);
-              setEmail("");
-              setPassword("");
-              setMessage("");
-            }}
+  setLoginMode(null);
+  setShowPatientSignup(false);
+
+  setEmail("");
+  setPassword("");
+
+  setSignupName("");
+  setSignupEmail("");
+  setSignupPassword("");
+
+  setMessage("");
+}}
           >
             ← Back to Portal Selection
           </button>
